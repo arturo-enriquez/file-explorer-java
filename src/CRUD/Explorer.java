@@ -7,7 +7,7 @@ import java.util.ArrayList;
 
 public class Explorer {
 
-    private Path home = Paths.get(System.getProperty("user.home"));
+    private Path home = Paths.get(System.getProperty("user.home"));//+"\\pictures"
     private ArrayList<Directory> list = new ArrayList<Directory>();
     
     private int nextId;

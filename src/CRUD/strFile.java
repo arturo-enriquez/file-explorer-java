@@ -5,18 +5,19 @@ import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.nio.file.Path;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import me.marnic.jiconextract.extractor.IconSize;
-import me.marnic.jiconextract.extractor.JIconExtractor;
+import javax.swing.filechooser.FileSystemView;
 
 public class strFile {
 
     private int id;
     private Path path;
     private File file;
-    private ImageIcon icon;
     private String simpleName;
     private String type;
 
@@ -31,7 +32,11 @@ public class strFile {
         } else {
             String[] fileName = file.getName().split("\\.");
             this.simpleName = fileName[0];
-            this.type = fileName[1];
+            if (fileName.length > 1) {
+                this.type = fileName[1];
+            } else {
+                this.type = "Directory";
+            }
         }
     }
     public strFile(File file) {
@@ -64,15 +69,20 @@ public class strFile {
         if (type.equals("png") || type.equals("jpg") || type.equals("jpeg")|| type.equals("gif")) {
             ImageIcon icon = new ImageIcon(this.path.toString());
             return imageScaled(icon, size);
-        }else if (type == "Directory") {
+        } else if (type == "Directory") {
             ImageIcon icon = new ImageIcon(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/Imgs/img-folder.png")));
-            
-            System.out.println("1");
             return imageScaled(icon, size);
         } else {
-            BufferedImage image = JIconExtractor.getJIconExtractor().extractIconFromFile(this.file,IconSize.EXTRALARGE);
-            return new ImageIcon(image);
+            try {
+                sun.awt.shell.ShellFolder sf = sun.awt.shell.ShellFolder.getShellFolder(this.file);
+                ImageIcon icon = new ImageIcon(sf.getIcon(true));
+                return imageScaled(icon, new Dimension(size.width-16, size.height-16));
+            } catch (FileNotFoundException ex) {
+                Logger.getLogger(strFile.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
+        ImageIcon icon = (ImageIcon) FileSystemView.getFileSystemView().getSystemIcon(this.file);
+        return imageScaled(icon, new Dimension(size.width-16, size.height-16));
     }
     private ImageIcon imageScaled( ImageIcon image, Dimension boundary) {
         Dimension imageSize = new Dimension(image.getIconWidth(), image.getIconHeight());
@@ -98,4 +108,20 @@ public class strFile {
     public String getType() {
         return type;
     }
+}
+
+class LoadIcon implements Runnable {
+
+    private strFile file;
+    private Dimension size;
+    
+    public LoadIcon(strFile file, Dimension size) {
+        this.file = file;
+        this.size = size;
+    }
+    
+    public void run() {
+        
+    }
+
 }

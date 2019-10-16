@@ -4,82 +4,142 @@ import CRUD.Directory;
 import CRUD.strFile;
 import Components.FileItem;
 import Components.FileProperties;
+import com.sun.glass.ui.Clipboard;
+import java.awt.Desktop;
 import java.awt.Dimension;
+import java.awt.Toolkit;
+import java.awt.datatransfer.StringSelection;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 
 public class DirectoryContent extends javax.swing.JPanel {
 
-    Directory dir;
+    private Directory dir;
+    private strFile selectedFile;
 
     public DirectoryContent(Directory dir) {
         initComponents();
         this.pnlFileContainer.setSize(new Dimension(600, 400));
-
         this.dir = dir;
         
         loadFiles(this.dir);
-
-        setLayoutResponsive(pnlFileContainer.getComponentCount());
-
-//        pnlDirContent.add(new FileProperties());
     }
-
+    
+    private void setDir(Directory dir){
+        this.dir = dir;
+    }
+    public Directory getDir() {
+        return dir;
+    }
+    
     public void loadFiles(Directory dir) {
         dir.loadFiles();
+        
         for (strFile file : dir.getList()) {
-            pnlFileContainer.add(new FileItem(file));
-//            setTimeout(() -> System.out.println("test"), 100);
+            FileItem fileItem = new FileItem(file);
+            pnlFileContainer.add(fileItem);
+            
+            Path path = file.getPath();
+            
+            fileItem.addMouseListener(new java.awt.event.MouseAdapter() {
+                public void mouseClicked(java.awt.event.MouseEvent evt) {
+                    if (evt.getClickCount() == 2) {
+                        if (Files.isReadable(path)) {
+                            if (file.getFile().isDirectory()) {
+                                File file = new File(path.toString());
+                                pnlFileContainer.removeAll();
+                                setDir(new Directory((Path) path));
+                                loadFiles(getDir());
+                            } else {
+                                try {
+                                    Desktop.getDesktop().open(file.getFile());
+                                } catch (IOException ex) {
+                                    Logger.getLogger(DirectoryContent.class.getName()).log(Level.SEVERE, null, ex);
+                                }
+                            }
+                        } else {
+                            JOptionPane.showMessageDialog(null, "Acceso denegado");
+                        }
+                    }
+                }
+                public void mouseReleased(java.awt.event.MouseEvent evt) {
+                    if (evt.isPopupTrigger()) {
+                        selectedFile = (strFile) file;
+                        popupFile.show(fileItem,evt.getX(),evt.getY());
+                    }
+                }
+            });
         }
         
-        txtDir.setText(dir.getPath().toString());
+        repaintFiles();
+        setLayoutResponsive(pnlFileContainer.getComponentCount());
         
-        totalFiles.setText(dir.getList().size() + " elementos");
+        txtDir.setText(dir.getName());
+        
+        totalFiles.setText(dir.getList().size() + " elements");
     }
-
-    private void setLayoutResponsive(int length) {
-        FileItem item = new FileItem(new strFile(this.dir.getPath().toFile()));
-        int containerWidth = this.pnlFileContainer.getWidth(),
-                itemWidth = item.getWidth() + 30,
-                itemHeight = item.getHeight() + 30,
-                spaces = (containerWidth / itemWidth),
-                height = itemHeight * ((length - 1) / spaces) + itemHeight + 30;
-
-        if (height > 0) {
-            this.pnlFileContainer.setPreferredSize(new Dimension(0, height));
-        }
-    }
-
     
-    public static void setTimeout(Runnable runnable, int delay){
-        try {
-            Thread.sleep(delay);
-            runnable.run();
-        }
-        catch (Exception e){
-            System.err.println(e);
-        }
+    public void repaintFiles(){
+        pnlFileContainer.repaint();
     }
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        popupFile = new javax.swing.JPopupMenu();
+        menuCut = new javax.swing.JMenuItem();
+        menuCopy = new javax.swing.JMenuItem();
+        menuPaste = new javax.swing.JMenuItem();
+        jSeparator1 = new javax.swing.JPopupMenu.Separator();
+        menuShowProperties = new javax.swing.JMenuItem();
+        popupFolder = new javax.swing.JPopupMenu();
         pnlContent = new javax.swing.JPanel();
         pnlHeader = new javax.swing.JPanel();
         btnBack = new javax.swing.JButton();
         btnReturn = new javax.swing.JButton();
         btnUp = new javax.swing.JButton();
-        txtDir = new javax.swing.JTextField();
+        pnlDir = new javax.swing.JPanel();
         lblDirIcon = new javax.swing.JLabel();
+        txtDir = new javax.swing.JTextField();
         btnRefresh = new javax.swing.JButton();
-        btnShowHidden = new javax.swing.JButton();
-        btnNewFolder = new javax.swing.JButton();
-        btnAll = new javax.swing.JButton();
-        btnSearch = new javax.swing.JButton();
-        btnShowMenu = new javax.swing.JButton();
+        pnlSearch = new javax.swing.JPanel();
+        lblDirIcon1 = new javax.swing.JLabel();
+        txtSearch = new javax.swing.JTextField();
         pnlDirContent = new javax.swing.JPanel();
         scrollFileContainer = new javax.swing.JScrollPane();
         pnlFileContainer = new javax.swing.JPanel();
         pnlFooter = new javax.swing.JPanel();
         totalFiles = new javax.swing.JLabel();
+
+        menuCut.setText("Cortar");
+        menuCut.setIconTextGap(0);
+        popupFile.add(menuCut);
+
+        menuCopy.setText("Copiar");
+        menuCopy.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                menuCopyActionPerformed(evt);
+            }
+        });
+        popupFile.add(menuCopy);
+
+        menuPaste.setText("Pegar");
+        popupFile.add(menuPaste);
+        popupFile.add(jSeparator1);
+
+        menuShowProperties.setText("Propiedades");
+        menuShowProperties.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                menuShowPropertiesActionPerformed(evt);
+            }
+        });
+        popupFile.add(menuShowProperties);
 
         pnlContent.setBackground(new java.awt.Color(255, 255, 255));
 
@@ -115,13 +175,31 @@ public class DirectoryContent extends javax.swing.JPanel {
         btnUp.setFocusable(false);
         btnUp.setMaximumSize(new java.awt.Dimension(24, 24));
         btnUp.setPreferredSize(new java.awt.Dimension(24, 24));
+        btnUp.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnUpActionPerformed(evt);
+            }
+        });
 
-        txtDir.setFont(new java.awt.Font("Arial", 1, 16)); // NOI18N
+        pnlDir.setBackground(new java.awt.Color(255, 255, 255));
+        pnlDir.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(229, 236, 242)));
+
+        lblDirIcon.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Imgs/folder.png"))); // NOI18N
+
+        txtDir.setFont(new java.awt.Font("Arial", 1, 15)); // NOI18N
         txtDir.setText("Documentos");
         txtDir.setBorder(null);
         txtDir.setCursor(new java.awt.Cursor(java.awt.Cursor.TEXT_CURSOR));
-
-        lblDirIcon.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Imgs/folder.png"))); // NOI18N
+        txtDir.setMinimumSize(new java.awt.Dimension(100, 18));
+        txtDir.setOpaque(false);
+        txtDir.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                txtDirFocusGained(evt);
+            }
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                txtDirFocusLost(evt);
+            }
+        });
 
         btnRefresh.setBackground(new java.awt.Color(255, 255, 255));
         btnRefresh.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Imgs/refresh.png"))); // NOI18N
@@ -133,55 +211,68 @@ public class DirectoryContent extends javax.swing.JPanel {
         btnRefresh.setMaximumSize(new java.awt.Dimension(24, 24));
         btnRefresh.setPreferredSize(new java.awt.Dimension(24, 24));
 
-        btnShowHidden.setBackground(new java.awt.Color(255, 255, 255));
-        btnShowHidden.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Imgs/eye-invisible.png"))); // NOI18N
-        btnShowHidden.setBorder(null);
-        btnShowHidden.setBorderPainted(false);
-        btnShowHidden.setContentAreaFilled(false);
-        btnShowHidden.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        btnShowHidden.setFocusable(false);
-        btnShowHidden.setMaximumSize(new java.awt.Dimension(24, 24));
-        btnShowHidden.setPreferredSize(new java.awt.Dimension(24, 24));
+        javax.swing.GroupLayout pnlDirLayout = new javax.swing.GroupLayout(pnlDir);
+        pnlDir.setLayout(pnlDirLayout);
+        pnlDirLayout.setHorizontalGroup(
+            pnlDirLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(pnlDirLayout.createSequentialGroup()
+                .addGap(12, 12, 12)
+                .addComponent(lblDirIcon)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(txtDir, javax.swing.GroupLayout.DEFAULT_SIZE, 534, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(btnRefresh, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(12, 12, 12))
+        );
+        pnlDirLayout.setVerticalGroup(
+            pnlDirLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(pnlDirLayout.createSequentialGroup()
+                .addGap(0, 0, Short.MAX_VALUE)
+                .addGroup(pnlDirLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(lblDirIcon, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(txtDir, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnRefresh, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE)))
+        );
 
-        btnNewFolder.setBackground(new java.awt.Color(255, 255, 255));
-        btnNewFolder.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Imgs/folder-plus.png"))); // NOI18N
-        btnNewFolder.setBorder(null);
-        btnNewFolder.setBorderPainted(false);
-        btnNewFolder.setContentAreaFilled(false);
-        btnNewFolder.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        btnNewFolder.setFocusable(false);
-        btnNewFolder.setMaximumSize(new java.awt.Dimension(24, 24));
-        btnNewFolder.setPreferredSize(new java.awt.Dimension(24, 24));
+        pnlSearch.setBackground(new java.awt.Color(255, 255, 255));
+        pnlSearch.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(229, 236, 242)));
 
-        btnAll.setBackground(new java.awt.Color(255, 255, 255));
-        btnAll.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Imgs/check-list.png"))); // NOI18N
-        btnAll.setBorder(null);
-        btnAll.setBorderPainted(false);
-        btnAll.setContentAreaFilled(false);
-        btnAll.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        btnAll.setFocusable(false);
-        btnAll.setMaximumSize(new java.awt.Dimension(24, 24));
-        btnAll.setPreferredSize(new java.awt.Dimension(24, 24));
+        lblDirIcon1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Imgs/search.png"))); // NOI18N
 
-        btnSearch.setBackground(new java.awt.Color(255, 255, 255));
-        btnSearch.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Imgs/search.png"))); // NOI18N
-        btnSearch.setBorder(null);
-        btnSearch.setBorderPainted(false);
-        btnSearch.setContentAreaFilled(false);
-        btnSearch.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        btnSearch.setFocusable(false);
-        btnSearch.setMaximumSize(new java.awt.Dimension(24, 24));
-        btnSearch.setPreferredSize(new java.awt.Dimension(24, 24));
+        txtSearch.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
+        txtSearch.setText("Search");
+        txtSearch.setBorder(null);
+        txtSearch.setCursor(new java.awt.Cursor(java.awt.Cursor.TEXT_CURSOR));
+        txtSearch.setMinimumSize(new java.awt.Dimension(100, 18));
+        txtSearch.setOpaque(false);
+        txtSearch.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                txtSearchFocusGained(evt);
+            }
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                txtSearchFocusLost(evt);
+            }
+        });
 
-        btnShowMenu.setBackground(new java.awt.Color(255, 255, 255));
-        btnShowMenu.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Imgs/menu.png"))); // NOI18N
-        btnShowMenu.setBorder(null);
-        btnShowMenu.setBorderPainted(false);
-        btnShowMenu.setContentAreaFilled(false);
-        btnShowMenu.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        btnShowMenu.setFocusable(false);
-        btnShowMenu.setMaximumSize(new java.awt.Dimension(24, 24));
-        btnShowMenu.setPreferredSize(new java.awt.Dimension(24, 24));
+        javax.swing.GroupLayout pnlSearchLayout = new javax.swing.GroupLayout(pnlSearch);
+        pnlSearch.setLayout(pnlSearchLayout);
+        pnlSearchLayout.setHorizontalGroup(
+            pnlSearchLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(pnlSearchLayout.createSequentialGroup()
+                .addGap(12, 12, 12)
+                .addComponent(lblDirIcon1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(txtSearch, javax.swing.GroupLayout.DEFAULT_SIZE, 121, Short.MAX_VALUE)
+                .addGap(12, 12, 12))
+        );
+        pnlSearchLayout.setVerticalGroup(
+            pnlSearchLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(pnlSearchLayout.createSequentialGroup()
+                .addGap(0, 0, Short.MAX_VALUE)
+                .addGroup(pnlSearchLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(lblDirIcon1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(txtSearch, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE)))
+        );
 
         javax.swing.GroupLayout pnlHeaderLayout = new javax.swing.GroupLayout(pnlHeader);
         pnlHeader.setLayout(pnlHeaderLayout);
@@ -194,40 +285,23 @@ public class DirectoryContent extends javax.swing.JPanel {
                 .addComponent(btnReturn, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(btnUp, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(lblDirIcon)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(pnlDir, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGap(16, 16, 16)
-                .addComponent(txtDir, javax.swing.GroupLayout.DEFAULT_SIZE, 514, Short.MAX_VALUE)
-                .addGap(10, 10, 10)
-                .addComponent(btnRefresh, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(32, 32, 32)
-                .addComponent(btnShowHidden, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(btnNewFolder, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(btnAll, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(btnSearch, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(btnShowMenu, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+                .addComponent(pnlSearch, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(16, 16, 16))
         );
         pnlHeaderLayout.setVerticalGroup(
             pnlHeaderLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(pnlHeaderLayout.createSequentialGroup()
                 .addGap(16, 16, 16)
-                .addGroup(pnlHeaderLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btnBack, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnReturn, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnUp, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(txtDir, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(lblDirIcon, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnRefresh, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnShowHidden, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnNewFolder, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnAll, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnSearch, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnShowMenu, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(pnlHeaderLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(pnlSearch, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(pnlDir, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(pnlHeaderLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(btnBack, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(btnReturn, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(btnUp, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addGap(16, 16, 16))
         );
 
@@ -237,17 +311,18 @@ public class DirectoryContent extends javax.swing.JPanel {
 
         scrollFileContainer.setBackground(new java.awt.Color(255, 255, 255));
         scrollFileContainer.setBorder(null);
+        scrollFileContainer.getVerticalScrollBar().setUnitIncrement(16);
 
         pnlFileContainer.setBackground(new java.awt.Color(255, 255, 255));
         pnlFileContainer.setCursor(null);
-        pnlFileContainer.setMinimumSize(new java.awt.Dimension(84, 98));
+        pnlFileContainer.setMinimumSize(new java.awt.Dimension(200, 98));
         pnlFileContainer.setPreferredSize(new java.awt.Dimension(600, 400));
         pnlFileContainer.addComponentListener(new java.awt.event.ComponentAdapter() {
             public void componentResized(java.awt.event.ComponentEvent evt) {
                 pnlFileContainerComponentResized(evt);
             }
         });
-        pnlFileContainer.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 30, 30));
+        pnlFileContainer.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 20, 12));
         scrollFileContainer.setViewportView(pnlFileContainer);
 
         pnlDirContent.add(scrollFileContainer);
@@ -280,17 +355,19 @@ public class DirectoryContent extends javax.swing.JPanel {
             .addComponent(pnlHeader, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnlContentLayout.createSequentialGroup()
                 .addGap(12, 12, 12)
-                .addGroup(pnlContentLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(pnlDirContent, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(pnlFooter, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                .addGroup(pnlContentLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(pnlContentLayout.createSequentialGroup()
+                        .addComponent(pnlFooter, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGap(16, 16, 16))
+                    .addComponent(pnlDirContent, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
         );
         pnlContentLayout.setVerticalGroup(
             pnlContentLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(pnlContentLayout.createSequentialGroup()
                 .addComponent(pnlHeader, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, 0)
-                .addComponent(pnlDirContent, javax.swing.GroupLayout.DEFAULT_SIZE, 467, Short.MAX_VALUE)
-                .addGap(16, 16, 16)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(pnlDirContent, javax.swing.GroupLayout.DEFAULT_SIZE, 456, Short.MAX_VALUE)
+                .addGap(12, 12, 12)
                 .addComponent(pnlFooter, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
@@ -299,41 +376,94 @@ public class DirectoryContent extends javax.swing.JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 924, Short.MAX_VALUE)
+            .addGap(0, 947, Short.MAX_VALUE)
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addComponent(pnlContent, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 600, Short.MAX_VALUE)
+            .addGap(0, 593, Short.MAX_VALUE)
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addComponent(pnlContent, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private void setLayoutResponsive(int length) {
+        FileItem item = new FileItem();
+        int containerWidth = this.pnlFileContainer.getWidth(),
+                itemWidth = item.getWidth() + 20,
+                itemHeight = item.getHeight() + 12,
+                spaces = (containerWidth / itemWidth),
+                height = itemHeight * ((length - 1) / spaces) + itemHeight + 30;
+
+        if (height > 0) {
+            this.pnlFileContainer.setPreferredSize(new Dimension(0, height));
+        }
+    }
     private void pnlFileContainerComponentResized(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_pnlFileContainerComponentResized
         setLayoutResponsive(pnlFileContainer.getComponentCount());
     }//GEN-LAST:event_pnlFileContainerComponentResized
 
+    // input focus
+    private void txtSearchFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtSearchFocusLost
+        String search = txtSearch.getText();
+        search.replace(" ", "");
+        if (search.equals("")) {
+            txtSearch.setText("Search");
+        }
+    }//GEN-LAST:event_txtSearchFocusLost
+    private void txtSearchFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtSearchFocusGained
+        if (txtSearch.getText().equals("Search")) {
+            txtSearch.setText("");
+        }
+    }//GEN-LAST:event_txtSearchFocusGained
+    private void txtDirFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtDirFocusGained
+        txtDir.setText(dir.getPath().toString());
+    }//GEN-LAST:event_txtDirFocusGained
+    private void txtDirFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtDirFocusLost
+        txtDir.setText(dir.getName());
+    }//GEN-LAST:event_txtDirFocusLost
+
+    private void btnUpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUpActionPerformed
+        pnlFileContainer.removeAll();
+        setDir(new Directory(this.dir.getPath().getParent()));
+        loadFiles(getDir());
+    }//GEN-LAST:event_btnUpActionPerformed
+
+    private void menuCopyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuCopyActionPerformed
+        
+    }//GEN-LAST:event_menuCopyActionPerformed
+
+    private void menuShowPropertiesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuShowPropertiesActionPerformed
+        pnlDirContent.add(new FileProperties(this.selectedFile));
+        pnlDirContent.repaint();
+    }//GEN-LAST:event_menuShowPropertiesActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton btnAll;
     private javax.swing.JButton btnBack;
-    private javax.swing.JButton btnNewFolder;
     private javax.swing.JButton btnRefresh;
     private javax.swing.JButton btnReturn;
-    private javax.swing.JButton btnSearch;
-    private javax.swing.JButton btnShowHidden;
-    private javax.swing.JButton btnShowMenu;
     private javax.swing.JButton btnUp;
+    private javax.swing.JPopupMenu.Separator jSeparator1;
     private javax.swing.JLabel lblDirIcon;
+    private javax.swing.JLabel lblDirIcon1;
+    private javax.swing.JMenuItem menuCopy;
+    private javax.swing.JMenuItem menuCut;
+    private javax.swing.JMenuItem menuPaste;
+    private javax.swing.JMenuItem menuShowProperties;
     private javax.swing.JPanel pnlContent;
+    private javax.swing.JPanel pnlDir;
     private javax.swing.JPanel pnlDirContent;
     private javax.swing.JPanel pnlFileContainer;
     private javax.swing.JPanel pnlFooter;
     private javax.swing.JPanel pnlHeader;
+    private javax.swing.JPanel pnlSearch;
+    private javax.swing.JPopupMenu popupFile;
+    private javax.swing.JPopupMenu popupFolder;
     private javax.swing.JScrollPane scrollFileContainer;
     private javax.swing.JLabel totalFiles;
     private javax.swing.JTextField txtDir;
+    private javax.swing.JTextField txtSearch;
     // End of variables declaration//GEN-END:variables
 }
