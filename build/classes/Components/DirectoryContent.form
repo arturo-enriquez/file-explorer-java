@@ -2,43 +2,6 @@
 
 <Form version="1.9" maxVersion="1.9" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <NonVisualComponents>
-    <Container class="javax.swing.JPopupMenu" name="popupFile">
-
-      <Layout class="org.netbeans.modules.form.compat2.layouts.DesignAbsoluteLayout">
-        <Property name="useNullLayout" type="boolean" value="true"/>
-      </Layout>
-      <SubComponents>
-        <MenuItem class="javax.swing.JMenuItem" name="menuCut">
-          <Properties>
-            <Property name="text" type="java.lang.String" value="Cortar"/>
-            <Property name="iconTextGap" type="int" value="0"/>
-          </Properties>
-        </MenuItem>
-        <MenuItem class="javax.swing.JMenuItem" name="menuCopy">
-          <Properties>
-            <Property name="text" type="java.lang.String" value="Copiar"/>
-          </Properties>
-          <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="menuCopyActionPerformed"/>
-          </Events>
-        </MenuItem>
-        <MenuItem class="javax.swing.JMenuItem" name="menuPaste">
-          <Properties>
-            <Property name="text" type="java.lang.String" value="Pegar"/>
-          </Properties>
-        </MenuItem>
-        <Component class="javax.swing.JPopupMenu$Separator" name="jSeparator1">
-        </Component>
-        <MenuItem class="javax.swing.JMenuItem" name="menuShowProperties">
-          <Properties>
-            <Property name="text" type="java.lang.String" value="Propiedades"/>
-          </Properties>
-          <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="menuShowPropertiesActionPerformed"/>
-          </Events>
-        </MenuItem>
-      </SubComponents>
-    </Container>
     <Container class="javax.swing.JPopupMenu" name="popupFolder">
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.DesignAbsoluteLayout">

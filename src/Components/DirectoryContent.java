@@ -16,7 +16,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JTextField;
 
 public class DirectoryContent extends javax.swing.JPanel {
 
@@ -28,62 +33,135 @@ public class DirectoryContent extends javax.swing.JPanel {
         this.pnlFileContainer.setSize(new Dimension(600, 400));
         this.dir = dir;
         
-        loadFiles(this.dir);
+//        loadFiles(this.dir);
     }
     
-    private void setDir(Directory dir){
+    public void setDir(Directory dir){
         this.dir = dir;
     }
     public Directory getDir() {
         return dir;
     }
-    
-    public void loadFiles(Directory dir) {
-        dir.loadFiles();
-        
-        for (strFile file : dir.getList()) {
-            FileItem fileItem = new FileItem(file);
-            pnlFileContainer.add(fileItem);
-            
-            Path path = file.getPath();
-            
-            fileItem.addMouseListener(new java.awt.event.MouseAdapter() {
-                public void mouseClicked(java.awt.event.MouseEvent evt) {
-                    if (evt.getClickCount() == 2) {
-                        if (Files.isReadable(path)) {
-                            if (file.getFile().isDirectory()) {
-                                File file = new File(path.toString());
-                                pnlFileContainer.removeAll();
-                                setDir(new Directory((Path) path));
-                                loadFiles(getDir());
-                            } else {
-                                try {
-                                    Desktop.getDesktop().open(file.getFile());
-                                } catch (IOException ex) {
-                                    Logger.getLogger(DirectoryContent.class.getName()).log(Level.SEVERE, null, ex);
-                                }
-                            }
-                        } else {
-                            JOptionPane.showMessageDialog(null, "Acceso denegado");
-                        }
-                    }
-                }
-                public void mouseReleased(java.awt.event.MouseEvent evt) {
-                    if (evt.isPopupTrigger()) {
-                        selectedFile = (strFile) file;
-                        popupFile.show(fileItem,evt.getX(),evt.getY());
-                    }
-                }
-            });
-        }
-        
-        repaintFiles();
-        setLayoutResponsive(pnlFileContainer.getComponentCount());
-        
-        txtDir.setText(dir.getName());
-        
-        totalFiles.setText(dir.getList().size() + " elements");
+
+    public strFile getSelectedFile() {
+        return selectedFile;
     }
+
+    public void setSelectedFile(strFile selectedFile) {
+        this.selectedFile = selectedFile;
+    }
+
+    public JButton getBtnBack() {
+        return btnBack;
+    }
+
+    public void setBtnBack(JButton btnBack) {
+        this.btnBack = btnBack;
+    }
+
+    public JButton getBtnReturn() {
+        return btnReturn;
+    }
+
+    public void setBtnReturn(JButton btnReturn) {
+        this.btnReturn = btnReturn;
+    }
+
+    public JButton getBtnUp() {
+        return btnUp;
+    }
+
+    public void setBtnUp(JButton btnUp) {
+        this.btnUp = btnUp;
+    }
+
+    public JPanel getPnlDirContent() {
+        return pnlDirContent;
+    }
+
+    public void setPnlDirContent(JPanel pnlDirContent) {
+        this.pnlDirContent = pnlDirContent;
+    }
+    
+    public JPanel getPnlFileContainer() {
+        return pnlFileContainer;
+    }
+
+    public void setPnlFileContainer(JPanel pnlFileContainer) {
+        this.pnlFileContainer = pnlFileContainer;
+    }
+
+    public JTextField getTxtDir() {
+        return txtDir;
+    }
+
+    public void setTxtDir(JTextField txtDir) {
+        this.txtDir = txtDir;
+    }
+
+    public JPopupMenu getPopupFolder() {
+        return popupFolder;
+    }
+
+    public void setPopupFolder(JPopupMenu popupFolder) {
+        this.popupFolder = popupFolder;
+    }
+
+    public JLabel getTotalFiles() {
+        return totalFiles;
+    }
+
+    public void setTotalFiles(JLabel totalFiles) {
+        this.totalFiles = totalFiles;
+    }
+    
+    
+//    public void loadFiles(Directory dir) {
+//        dir.loadFiles();
+//        
+//        for (strFile file : dir.getList()) {
+//            FileItem fileItem = new FileItem(file);
+//            pnlFileContainer.add(fileItem);
+//            
+//            Path path = file.getPath();
+//            
+//            fileItem.addMouseListener(new java.awt.event.MouseAdapter() {
+//                public void mouseClicked(java.awt.event.MouseEvent evt) {
+//                    if (evt.getClickCount() == 2) {
+//                        if (Files.isReadable(path)) {
+//                            if (file.getFile().isDirectory()) {
+//                                File file = new File(path.toString());
+//                                pnlFileContainer.removeAll();
+//                                setDir(new Directory((Path) path));
+//                                loadFiles(getDir());
+//                            } else {
+//                                try {
+//                                    Desktop.getDesktop().open(file.getFile());
+//                                } catch (IOException ex) {
+//                                    Logger.getLogger(DirectoryContent.class.getName()).log(Level.SEVERE, null, ex);
+//                                }
+//                            }
+//                        } else {
+//                            JOptionPane.showMessageDialog(null, "Acceso denegado");
+//                        }
+//                    }
+//                }
+//                public void mouseReleased(java.awt.event.MouseEvent evt) {
+//                    if (evt.isPopupTrigger()) {
+//                        selectedFile = (strFile) file;
+//                        popupFile.show(fileItem,evt.getX(),evt.getY());
+//                    }
+//                }
+//            });
+//        }
+//        
+//        repaintFiles();
+//        setLayoutResponsive();
+//        
+//        txtDir.setText(dir.getName());
+//        
+//        totalFiles.setText(dir.getList().size() + " elements");
+//    }
     
     public void repaintFiles(){
         pnlFileContainer.repaint();
@@ -92,12 +170,6 @@ public class DirectoryContent extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        popupFile = new javax.swing.JPopupMenu();
-        menuCut = new javax.swing.JMenuItem();
-        menuCopy = new javax.swing.JMenuItem();
-        menuPaste = new javax.swing.JMenuItem();
-        jSeparator1 = new javax.swing.JPopupMenu.Separator();
-        menuShowProperties = new javax.swing.JMenuItem();
         popupFolder = new javax.swing.JPopupMenu();
         pnlContent = new javax.swing.JPanel();
         pnlHeader = new javax.swing.JPanel();
@@ -116,30 +188,6 @@ public class DirectoryContent extends javax.swing.JPanel {
         pnlFileContainer = new javax.swing.JPanel();
         pnlFooter = new javax.swing.JPanel();
         totalFiles = new javax.swing.JLabel();
-
-        menuCut.setText("Cortar");
-        menuCut.setIconTextGap(0);
-        popupFile.add(menuCut);
-
-        menuCopy.setText("Copiar");
-        menuCopy.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                menuCopyActionPerformed(evt);
-            }
-        });
-        popupFile.add(menuCopy);
-
-        menuPaste.setText("Pegar");
-        popupFile.add(menuPaste);
-        popupFile.add(jSeparator1);
-
-        menuShowProperties.setText("Propiedades");
-        menuShowProperties.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                menuShowPropertiesActionPerformed(evt);
-            }
-        });
-        popupFile.add(menuShowProperties);
 
         pnlContent.setBackground(new java.awt.Color(255, 255, 255));
 
@@ -388,20 +436,24 @@ public class DirectoryContent extends javax.swing.JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void setLayoutResponsive(int length) {
+    public void setLayoutResponsive() {
+        int length = this.pnlFileContainer.getComponentCount();
         FileItem item = new FileItem();
         int containerWidth = this.pnlFileContainer.getWidth(),
                 itemWidth = item.getWidth() + 20,
                 itemHeight = item.getHeight() + 12,
-                spaces = (containerWidth / itemWidth),
-                height = itemHeight * ((length - 1) / spaces) + itemHeight + 30;
+                spaces = (containerWidth / itemWidth);
+        
+                spaces = (spaces > 0) ? spaces : 1;
+                
+                int height = itemHeight * ((length - 1) / spaces) + itemHeight + 30;
 
         if (height > 0) {
             this.pnlFileContainer.setPreferredSize(new Dimension(0, height));
         }
     }
     private void pnlFileContainerComponentResized(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_pnlFileContainerComponentResized
-        setLayoutResponsive(pnlFileContainer.getComponentCount());
+        setLayoutResponsive();
     }//GEN-LAST:event_pnlFileContainerComponentResized
 
     // input focus
@@ -427,17 +479,8 @@ public class DirectoryContent extends javax.swing.JPanel {
     private void btnUpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUpActionPerformed
         pnlFileContainer.removeAll();
         setDir(new Directory(this.dir.getPath().getParent()));
-        loadFiles(getDir());
+//        loadFiles(getDir());
     }//GEN-LAST:event_btnUpActionPerformed
-
-    private void menuCopyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuCopyActionPerformed
-        
-    }//GEN-LAST:event_menuCopyActionPerformed
-
-    private void menuShowPropertiesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuShowPropertiesActionPerformed
-        pnlDirContent.add(new FileProperties(this.selectedFile));
-        pnlDirContent.repaint();
-    }//GEN-LAST:event_menuShowPropertiesActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -445,13 +488,8 @@ public class DirectoryContent extends javax.swing.JPanel {
     private javax.swing.JButton btnRefresh;
     private javax.swing.JButton btnReturn;
     private javax.swing.JButton btnUp;
-    private javax.swing.JPopupMenu.Separator jSeparator1;
     private javax.swing.JLabel lblDirIcon;
     private javax.swing.JLabel lblDirIcon1;
-    private javax.swing.JMenuItem menuCopy;
-    private javax.swing.JMenuItem menuCut;
-    private javax.swing.JMenuItem menuPaste;
-    private javax.swing.JMenuItem menuShowProperties;
     private javax.swing.JPanel pnlContent;
     private javax.swing.JPanel pnlDir;
     private javax.swing.JPanel pnlDirContent;
@@ -459,11 +497,14 @@ public class DirectoryContent extends javax.swing.JPanel {
     private javax.swing.JPanel pnlFooter;
     private javax.swing.JPanel pnlHeader;
     private javax.swing.JPanel pnlSearch;
-    private javax.swing.JPopupMenu popupFile;
     private javax.swing.JPopupMenu popupFolder;
     private javax.swing.JScrollPane scrollFileContainer;
     private javax.swing.JLabel totalFiles;
     private javax.swing.JTextField txtDir;
     private javax.swing.JTextField txtSearch;
     // End of variables declaration//GEN-END:variables
+
+    public void loadFiles(Directory dir) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 }

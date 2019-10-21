@@ -27,6 +27,76 @@
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnNewTabActionPerformed"/>
       </Events>
     </Component>
+    <Container class="javax.swing.JPopupMenu" name="popupMenuFile">
+
+      <Layout class="org.netbeans.modules.form.compat2.layouts.DesignAbsoluteLayout">
+        <Property name="useNullLayout" type="boolean" value="true"/>
+      </Layout>
+      <SubComponents>
+        <MenuItem class="javax.swing.JMenuItem" name="menuOpen">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Abrir"/>
+          </Properties>
+        </MenuItem>
+        <Component class="javax.swing.JPopupMenu$Separator" name="jSeparator3">
+        </Component>
+        <MenuItem class="javax.swing.JMenuItem" name="menuCut">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Cortar"/>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="menuCutActionPerformed"/>
+          </Events>
+        </MenuItem>
+        <MenuItem class="javax.swing.JMenuItem" name="menuCopy">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Copiar"/>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="menuCopyActionPerformed"/>
+          </Events>
+        </MenuItem>
+        <Component class="javax.swing.JPopupMenu$Separator" name="jSeparator2">
+        </Component>
+        <MenuItem class="javax.swing.JMenuItem" name="menuDelete">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Eliminar"/>
+          </Properties>
+        </MenuItem>
+        <MenuItem class="javax.swing.JMenuItem" name="menuChangeName">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Cambiar nombre"/>
+          </Properties>
+        </MenuItem>
+        <Component class="javax.swing.JPopupMenu$Separator" name="jSeparator1">
+        </Component>
+        <MenuItem class="javax.swing.JMenuItem" name="menuProperties">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Propiedades"/>
+          </Properties>
+        </MenuItem>
+      </SubComponents>
+    </Container>
+    <Container class="javax.swing.JPopupMenu" name="popupMenuInDirectory">
+
+      <Layout class="org.netbeans.modules.form.compat2.layouts.DesignAbsoluteLayout">
+        <Property name="useNullLayout" type="boolean" value="true"/>
+      </Layout>
+      <SubComponents>
+        <MenuItem class="javax.swing.JMenuItem" name="menuPaste">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Pegar"/>
+          </Properties>
+        </MenuItem>
+        <Component class="javax.swing.JPopupMenu$Separator" name="hr">
+        </Component>
+        <MenuItem class="javax.swing.JMenuItem" name="menuDirectoryProperties">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Propiedades"/>
+          </Properties>
+        </MenuItem>
+      </SubComponents>
+    </Container>
   </NonVisualComponents>
   <Properties>
     <Property name="defaultCloseOperation" type="int" value="3"/>
@@ -64,7 +134,7 @@
     <Container class="javax.swing.JPanel" name="body">
       <Properties>
         <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-          <Color blue="f0" green="ef" red="ed" type="rgb"/>
+          <Color blue="f8" green="f1" red="ef" type="rgb"/>
         </Property>
       </Properties>
 

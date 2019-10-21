@@ -5,16 +5,31 @@ import Components.DirectoryFixed;
 import Components.DirectoryTab;
 import CRUD.Directory;
 import CRUD.Explorer;
+import CRUD.strFile;
+import Components.FileItem;
+import Components.FileProperties;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Desktop;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseListener;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+import javax.swing.JPopupMenu;
 import javax.swing.plaf.basic.BasicTabbedPaneUI;
 
 public class Frame extends javax.swing.JFrame {
     
     Explorer explorer = new Explorer();
-    public static String fileCopy;
+    public File selectedFile;
+    public String selectedType;
     
     public Frame() {
         initComponents();
@@ -24,6 +39,162 @@ public class Frame extends javax.swing.JFrame {
         
         addNewTab();
         pnlTabs.add(btnNewTab);
+    }
+    
+    public void loadFiles(DirectoryContent dirContent) {
+        dirContent.getDir().loadFiles();
+        
+        for (strFile file : dirContent.getDir().getList()) {
+            FileItem fileItem = new FileItem(file);
+            dirContent.getPnlFileContainer().add(fileItem);
+            
+            Path path = file.getPath();
+            MouseListener m1 = new MouseAdapter() {
+                public void mouseClicked(java.awt.event.MouseEvent evt) {
+                    if (evt.getClickCount() == 2) {
+                        if (Files.isReadable(path)) {
+                            if (file.getFile().isDirectory()) {
+                                File file = new File(path.toString());
+                                dirContent.getPnlFileContainer().removeAll();
+                                dirContent.setDir(new Directory((Path) path));
+                                loadFiles(dirContent);
+                            } else {
+                                try {
+                                    Desktop.getDesktop().open(file.getFile());
+                                } catch (IOException ex) {
+                                    Logger.getLogger(DirectoryContent.class.getName()).log(Level.SEVERE, null, ex);
+                                }
+                            }
+                        } else {
+                            JOptionPane.showMessageDialog(null, "Acceso denegado");
+                        }
+                    }
+                }
+                public void mouseReleased(java.awt.event.MouseEvent evt) {
+                    if (evt.isPopupTrigger()) {
+                        popupMenuFile.show(fileItem,evt.getX(),evt.getY());
+                        if (file.getFile().isDirectory()) {
+                            menuChangeName.setEnabled(false);
+                            menuCopy.setEnabled(false);
+                            menuCut.setEnabled(false);
+                            menuDelete.setEnabled(false);
+                        } else {
+                            menuChangeName.setEnabled(true);
+                            menuCopy.setEnabled(true);
+                            menuCut.setEnabled(true);
+                            menuDelete.setEnabled(true);
+                        }
+                        menuProperties.addActionListener(new java.awt.event.ActionListener() {
+                            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                                if (dirContent.getPnlDirContent().getComponentCount()> 1) {
+                                    for (int i = 1; i < dirContent.getPnlDirContent().getComponentCount(); i++) {
+                                        dirContent.getPnlDirContent().remove(i);
+                                    }
+                                }
+                                dirContent.getPnlDirContent().add(new FileProperties(file));
+                                dirContent.getPnlDirContent().revalidate();
+                                dirContent.setLayoutResponsive();
+                            }
+                        });
+                        for (ActionListener actionListener : menuCut.getActionListeners()) {
+                            menuCut.removeActionListener(actionListener);
+                        }
+                        if (menuCut.getActionListeners().length <= 1) {
+                            menuCut.addActionListener(new java.awt.event.ActionListener() {
+                                public void actionPerformed(java.awt.event.ActionEvent evt) {
+                                    selectedFile = fileItem.getFile();
+                                    selectedType= "cut";
+                                }
+                            });
+                        }
+                        menuCopy.addActionListener(new java.awt.event.ActionListener() {
+                            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                                selectedFile = file.getFile();
+                                selectedType= "copy";
+                                System.out.println(selectedFile);
+                            }
+                        });
+                        menuOpen.addActionListener(new java.awt.event.ActionListener() {
+                            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                                if (Files.isReadable(path)) {
+                                    if (file.getFile().isDirectory()) {
+                                        File file = new File(path.toString());
+                                        dirContent.getPnlFileContainer().removeAll();
+                                        dirContent.setDir(new Directory((Path) path));
+                                        loadFiles(dirContent);
+                                    } else {
+                                        try {
+                                            Desktop.getDesktop().open(file.getFile());
+                                        } catch (IOException ex) {
+                                            Logger.getLogger(DirectoryContent.class.getName()).log(Level.SEVERE, null, ex);
+                                        }
+                                    }
+                                } else {
+                                    JOptionPane.showMessageDialog(null, "Acceso denegado");
+                                }
+                            }
+                        });
+                        popupMenuFile.add(menuProperties);
+                    }
+                }
+            };
+            fileItem.addMouseListener(m1);
+        }
+        
+        
+        dirContent.getPnlFileContainer().addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                if (evt.isPopupTrigger()) {
+                    popupMenuFile.show(dirContent.getPnlFileContainer(),evt.getX(),evt.getY());
+                    popupMenuInDirectory.show(dirContent.getPnlFileContainer(),evt.getX(),evt.getY());
+                    if (selectedFile==null) menuPaste.setEnabled(false);
+                    else  menuPaste.setEnabled(true);
+                    menuPaste.addActionListener(new java.awt.event.ActionListener() {
+                        public void actionPerformed(java.awt.event.ActionEvent evt) {
+                            if (selectedFile!=null) {
+                                File filex = selectedFile;
+                                if (selectedType=="cut") {
+                                    // renaming the file and moving it to a new location 
+                                    if(filex.renameTo(new File(dirContent.getDir().getPath()+ File.separator +filex.getName()))) { 
+                                        // if file copied successfully then delete the original file 
+                                        filex.delete();
+                                        dirContent.getPnlFileContainer().removeAll();
+                                        dirContent.setDir(new Directory(dirContent.getDir().getPath()));
+                                        loadFiles(dirContent);
+                                    } else { 
+                                        JOptionPane.showMessageDialog(null, "El archivo no se pudo mover");
+                                    } 
+                                } else {
+
+                                }
+                                selectedFile=null;
+                            } else {
+                                
+                            }
+                        }
+                    });
+                    menuDirectoryProperties.addActionListener(new java.awt.event.ActionListener() {
+                        public void actionPerformed(java.awt.event.ActionEvent evt) {
+                                if (dirContent.getPnlDirContent().getComponentCount()> 1) {
+                                    for (int i = 1; i < dirContent.getPnlDirContent().getComponentCount(); i++) {
+                                        dirContent.getPnlDirContent().remove(i);
+                                    }
+                                }
+                                dirContent.getPnlDirContent().add(new FileProperties(new strFile(dirContent.getDir().getFile())));
+                                dirContent.getPnlDirContent().revalidate();
+                                dirContent.setLayoutResponsive();
+                        }
+                    });
+                }
+            }
+        });
+        
+        dirContent.repaintFiles();
+        dirContent.setLayoutResponsive();
+        
+        dirContent.getTxtDir().setText(dirContent.getDir().getName());
+        
+        dirContent.getTotalFiles().setText(dirContent.getDir().getList().size() + " elements");
     }
     
     public void addNewTab(Directory dir) {
@@ -59,6 +230,8 @@ public class Frame extends javax.swing.JFrame {
             }
         });
         
+        loadFiles(content);
+        
         repaintTabs();
         
     }
@@ -73,6 +246,20 @@ public class Frame extends javax.swing.JFrame {
     private void initComponents() {
 
         btnNewTab = new javax.swing.JButton();
+        popupMenuFile = new javax.swing.JPopupMenu();
+        menuOpen = new javax.swing.JMenuItem();
+        jSeparator3 = new javax.swing.JPopupMenu.Separator();
+        menuCut = new javax.swing.JMenuItem();
+        menuCopy = new javax.swing.JMenuItem();
+        jSeparator2 = new javax.swing.JPopupMenu.Separator();
+        menuDelete = new javax.swing.JMenuItem();
+        menuChangeName = new javax.swing.JMenuItem();
+        jSeparator1 = new javax.swing.JPopupMenu.Separator();
+        menuProperties = new javax.swing.JMenuItem();
+        popupMenuInDirectory = new javax.swing.JPopupMenu();
+        menuPaste = new javax.swing.JMenuItem();
+        hr = new javax.swing.JPopupMenu.Separator();
+        menuDirectoryProperties = new javax.swing.JMenuItem();
         body = new javax.swing.JPanel();
         pnlAside = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
@@ -94,10 +281,48 @@ public class Frame extends javax.swing.JFrame {
             }
         });
 
+        menuOpen.setText("Abrir");
+        popupMenuFile.add(menuOpen);
+        popupMenuFile.add(jSeparator3);
+
+        menuCut.setText("Cortar");
+        menuCut.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                menuCutActionPerformed(evt);
+            }
+        });
+        popupMenuFile.add(menuCut);
+
+        menuCopy.setText("Copiar");
+        menuCopy.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                menuCopyActionPerformed(evt);
+            }
+        });
+        popupMenuFile.add(menuCopy);
+        popupMenuFile.add(jSeparator2);
+
+        menuDelete.setText("Eliminar");
+        popupMenuFile.add(menuDelete);
+
+        menuChangeName.setText("Cambiar nombre");
+        popupMenuFile.add(menuChangeName);
+        popupMenuFile.add(jSeparator1);
+
+        menuProperties.setText("Propiedades");
+        popupMenuFile.add(menuProperties);
+
+        menuPaste.setText("Pegar");
+        popupMenuInDirectory.add(menuPaste);
+        popupMenuInDirectory.add(hr);
+
+        menuDirectoryProperties.setText("Propiedades");
+        popupMenuInDirectory.add(menuDirectoryProperties);
+
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("File Explorer");
 
-        body.setBackground(new java.awt.Color(237, 239, 240));
+        body.setBackground(new java.awt.Color(239, 241, 248));
 
         pnlAside.setBackground(null);
         pnlAside.setMaximumSize(new java.awt.Dimension(230, 714));
@@ -201,6 +426,14 @@ public class Frame extends javax.swing.JFrame {
         pnlTabs.add(btnNewTab);
     }//GEN-LAST:event_btnNewTabActionPerformed
 
+    private void menuCopyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuCopyActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_menuCopyActionPerformed
+
+    private void menuCutActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuCutActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_menuCutActionPerformed
+
     public void unfocusTabs() {
         for (int i = 0; i < pnlTabs.getComponentCount()-1; i++) {
             DirectoryTab tab = (DirectoryTab) (pnlTabs.getComponents()[i]);
@@ -256,10 +489,24 @@ public class Frame extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel body;
     private javax.swing.JButton btnNewTab;
+    private javax.swing.JPopupMenu.Separator hr;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JPopupMenu.Separator jSeparator1;
+    private javax.swing.JPopupMenu.Separator jSeparator2;
+    private javax.swing.JPopupMenu.Separator jSeparator3;
+    private javax.swing.JMenuItem menuChangeName;
+    private javax.swing.JMenuItem menuCopy;
+    private javax.swing.JMenuItem menuCut;
+    private javax.swing.JMenuItem menuDelete;
+    private javax.swing.JMenuItem menuDirectoryProperties;
+    private javax.swing.JMenuItem menuOpen;
+    private javax.swing.JMenuItem menuPaste;
+    private javax.swing.JMenuItem menuProperties;
     private javax.swing.JPanel pnlAside;
     private javax.swing.JPanel pnlQuickAccess;
     private javax.swing.JPanel pnlTabs;
+    private javax.swing.JPopupMenu popupMenuFile;
+    private javax.swing.JPopupMenu popupMenuInDirectory;
     private javax.swing.JTabbedPane tabContent;
     // End of variables declaration//GEN-END:variables
 

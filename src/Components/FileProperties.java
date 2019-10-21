@@ -10,6 +10,8 @@ public class FileProperties extends javax.swing.JPanel {
         pnlImageIcon.setSize(260,154);
         
         ImageIcon.setIcon(file.getIcon(pnlImageIcon.getSize()));
+        lblFileTitle.setText(file.getSimpleName());
+        lblFileType.setText(file.getType());
         
         pnlProperties.add(new FileProperty());
         pnlProperties.add(new FileProperty());
@@ -24,8 +26,8 @@ public class FileProperties extends javax.swing.JPanel {
 
         pnlImageIcon = new javax.swing.JPanel();
         ImageIcon = new javax.swing.JLabel();
-        jLabel1 = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
+        lblFileTitle = new javax.swing.JLabel();
+        lblFileType = new javax.swing.JLabel();
         btnClose = new javax.swing.JButton();
         scroll = new javax.swing.JScrollPane();
         pnlProperties = new javax.swing.JPanel();
@@ -49,13 +51,13 @@ public class FileProperties extends javax.swing.JPanel {
             .addComponent(ImageIcon, javax.swing.GroupLayout.DEFAULT_SIZE, 154, Short.MAX_VALUE)
         );
 
-        jLabel1.setFont(new java.awt.Font("Arial", 1, 16)); // NOI18N
-        jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel1.setText("File Name");
+        lblFileTitle.setFont(new java.awt.Font("Arial", 1, 16)); // NOI18N
+        lblFileTitle.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        lblFileTitle.setText("File Name");
 
-        jLabel2.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
-        jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel2.setText("Type");
+        lblFileType.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
+        lblFileType.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        lblFileType.setText("Type");
 
         btnClose.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Imgs/close.png"))); // NOI18N
         btnClose.setBorder(null);
@@ -92,8 +94,8 @@ public class FileProperties extends javax.swing.JPanel {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addGap(20, 20, 20)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(lblFileTitle, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(lblFileType, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(scroll, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 260, Short.MAX_VALUE)
                     .addComponent(pnlImageIcon, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addGap(20, 20, 20))
@@ -105,9 +107,9 @@ public class FileProperties extends javax.swing.JPanel {
                 .addGap(0, 0, 0)
                 .addComponent(pnlImageIcon, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(16, 16, 16)
-                .addComponent(jLabel1)
+                .addComponent(lblFileTitle)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel2)
+                .addComponent(lblFileType)
                 .addGap(29, 29, 29)
                 .addComponent(scroll, javax.swing.GroupLayout.DEFAULT_SIZE, 24, Short.MAX_VALUE)
                 .addGap(20, 20, 20))
@@ -125,8 +127,8 @@ public class FileProperties extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel ImageIcon;
     private javax.swing.JButton btnClose;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel lblFileTitle;
+    private javax.swing.JLabel lblFileType;
     private javax.swing.JPanel pnlImageIcon;
     private javax.swing.JPanel pnlProperties;
     private javax.swing.JScrollPane scroll;
